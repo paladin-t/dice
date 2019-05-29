@@ -4,12 +4,8 @@ REM License: CC-BY
 REM
 REM Press Ctrl+R to run.
 
-import "btnbhvr"
-
 drv = driver()
 print drv, ", detail type is: ", typeof(drv);
-
-btn_roll = load_resource("btnbhvr.sprite")
 
 background = load_resource("background.quantized")
 face1 = load_resource("face1.quantized")
@@ -177,12 +173,13 @@ def update(delta)
 	tritex face6, vec4(x4,y4,0,0), vec4(x0,y0,0,1), vec4(x1,y1,1,1)
 
 	if cy >= ey then
-		if btnbhvr(btn_roll, 59,16,32,12) then
+		text 2, 2, "Touch to roll", rgba(0, 0, 0)
+		text 1, 1, "Touch to roll", rgba(255, 255, 255)
+		touch 0, _1, _2, m0
+		if m0 then
 			roll()
 		endif
 	endif
-
-	btnrst()
 enddef
 
 roll()
