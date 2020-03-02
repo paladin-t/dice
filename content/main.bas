@@ -15,52 +15,51 @@ face4 = load_resource("face4.quantized")
 face5 = load_resource("face5.quantized")
 face6 = load_resource("face6.quantized")
 
-w = 1
-p0 = vec4(-1, 1, 1, w)
-p1 = vec4(1, 1, 1, w)
-p2 = vec4(1, -1, 1, w)
-p3 = vec4(-1, -1, 1, w)
-p4 = vec4(-1, 1, -1, w)
-p5 = vec4(1, 1, -1, w)
-p6 = vec4(1, -1, -1, w)
-p7 = vec4(-1, -1, -1, w)
+p0 = vec4(-1, 1, 1, 1)
+p1 = vec4(1, 1, 1, 1)
+p2 = vec4(1, -1, 1, 1)
+p3 = vec4(-1, -1, 1, 1)
+p4 = vec4(-1, 1, -1, 1)
+p5 = vec4(1, 1, -1, 1)
+p6 = vec4(1, -1, -1, 1)
+p7 = vec4(-1, -1, -1, 1)
 
-ms = mat4x4_from_scale(15, 15, 15)
-mr = nil
-mt = nil
-mm = nil
-mv = mat4x4_lookat(vec3(0, 40, -80), vec3(0, 0, 0), vec3(0, 1, 0))
-mp = mat4x4_perspective_fov(pi * 0.5, 160 / 128, -10, 10, true)
+ms = mat4x4_from_scale(15, 15, 15) ' Scaling matrix.
+mr = nil ' Rotation matrix.
+mt = nil ' Translation matrix.
+mm = nil ' Multiplied matrix.
+mv = mat4x4_lookat(vec3(0, 40, -80), vec3(0, 0, 0), vec3(0, 1, 0)) ' View matrix.
+mp = mat4x4_perspective_fov(pi * 0.5, 160 / 128, -10, 10, true) ' Projection matrix.
 
-rx = 0
-ry = 0
-rz = 0
-ax = 0
-ay = 0
-az = 0
-px = 0
-py = 0
-pz = 0
-vx = 0
-vy = 0
-vz = 0
-cy = 0
-ey = 4
+rot_x = 0 ' Rotation.
+rot_y = 0
+rot_z = 0
+ang_x = 0 ' Angular velocity.
+ang_y = 0
+ang_z = 0
+pos_x = 0 ' Position.
+pos_y = 0
+pos_z = 0
+vel_x = 0 ' Velocity.
+vel_y = 0
+vel_z = 0
+col_n = 0 ' Collision counter.
+col_end = 4 ' Collision condition.
 
 def roll()
-	ax = rnd * 2 - 1
-	ay = rnd * 2 - 1
-	az = rnd * 2 - 1
-	vv = normalize(vec3(ax, ay, az)) * 1000
-	unpack(vv, ax, ay, az)
+	ang_x = rnd * 2 - 1
+	ang_y = rnd * 2 - 1
+	ang_z = rnd * 2 - 1
+	tmp = normalize(vec3(ang_x, ang_y, ang_z)) * 1000
+	unpack(tmp, ang_x, ang_y, ang_z)
 
-	vx = rnd * 2 - 1
-	vy = rnd * 2 + 1
-	vz = rnd * 2 - 1
-	vv = normalize(vec3(vx, vy, vz)) * 1000
-	unpack(vv, vx, vy, vz)
+	vel_x = rnd * 2 - 1
+	vel_y = rnd * 2 + 1
+	vel_z = rnd * 2 - 1
+	tmp = normalize(vec3(vel_x, vel_y, vel_z)) * 1000
+	unpack(tmp, vel_x, vel_y, vel_z)
 
-	cy = 0
+	col_n = 0
 enddef
 
 def homogenize(p)
@@ -88,57 +87,57 @@ enddef
 def update(delta)
 	img background, 0, 0
 
-	px = px + vx * delta
-	py = py + vy * delta
-	pz = pz + vz * delta
+	pos_x = pos_x + vel_x * delta
+	pos_y = pos_y + vel_y * delta
+	pos_z = pos_z + vel_z * delta
 	radius = 40
-	if px < (-radius) then
-		px = -radius
-		vx = abs(vx)
+	if pos_x < (-radius) then
+		pos_x = -radius
+		vel_x = abs(vel_x)
 		sound()
-	elseif px > radius then
-		px = radius
-		vx = -abs(vx)
-		sound()
-	endif
-	if py < (-radius) then
-		py = -radius
-		vy = abs(vy)
-		cy = cy + 1
-		sound()
-	elseif py > radius then
-		py = radius
-		vy = -abs(vy)
+	elseif pos_x > radius then
+		pos_x = radius
+		vel_x = -abs(vel_x)
 		sound()
 	endif
-	if pz < (-radius) then
-		pz = -radius
-		vz = abs(vz)
+	if pos_y < (-radius) then
+		pos_y = -radius
+		vel_y = abs(vel_y)
+		col_n = col_n + 1
 		sound()
-	elseif pz > radius then
-		pz = radius
-		vz = -abs(vz)
+	elseif pos_y > radius then
+		pos_y = radius
+		vel_y = -abs(vel_y)
+		sound()
+	endif
+	if pos_z < (-radius) then
+		pos_z = -radius
+		vel_z = abs(vel_z)
+		sound()
+	elseif pos_z > radius then
+		pos_z = radius
+		vel_z = -abs(vel_z)
 		sound()
 	endif
 
-	if cy < ey then
-		rx = rx + ax * delta
-		ry = ry + ay * delta
-		rz = rz + az * delta
+	if col_n < col_end then
+		rot_x = rot_x + ang_x * delta
+		rot_y = rot_y + ang_y * delta
+		rot_z = rot_z + ang_z * delta
 	else
-		vx = 0
-		vy = 0
-		vz = 0
-		ax = 0
-		ay = 0
-		az = 0
-		rx = round(rx / 90) * 90
-		ry = round(ry / 90) * 90
-		rz = round(rz / 90) * 90
+		vel_x = 0
+		vel_y = 0
+		vel_z = 0
+		ang_x = 0
+		ang_y = 0
+		ang_z = 0
+		rot_x = round(rot_x / 90) * 90
+		rot_y = round(rot_y / 90) * 90
+		rot_z = round(rot_z / 90) * 90
 	endif
 
-	mr = mat4x4_from_euler(rad(rx), rad(ry), rad(rz))
-	mt = mat4x4_from_translation(px, py, pz)
+	mr = mat4x4_from_euler(rad(rot_x), rad(rot_y), rad(rot_z))
+	mt = mat4x4_from_translation(pos_x, pos_y, pos_z)
 	mm = mr * ms * mt
 
 	p0_ = rasterize(p0)
@@ -172,7 +171,7 @@ def update(delta)
 	tritex face6, vec4(x4,y4,0,0), vec4(x1,y1,1,1), vec4(x5,y5,1,0)
 	tritex face6, vec4(x4,y4,0,0), vec4(x0,y0,0,1), vec4(x1,y1,1,1)
 
-	if cy >= ey then
+	if col_n >= col_end then
 		text 2, 2, "Touch to roll", rgba(0, 0, 0)
 		text 1, 1, "Touch to roll", rgba(255, 255, 255)
 		touch 0, _1, _2, m0
